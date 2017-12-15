@@ -3,39 +3,37 @@ import requests, json
 def listFiles(ip, port, clientCache):
     location = 'http://{}:{}/filedir'.format(ip, port)
     r = requests.get(location)
-    json_data = json.loads(r.text)  # JSON to dict
-    print("List of files on file server:\n")
+    json_data = json.loads(r.text)  
+    print("Server File List:\n")
     for x in json_data:
-        # ''.join(x['data']) to concatenate the strings in the list form fopen
         print("--------------------------")
         print("File Name: {}\nVersion Number: {}\nFile Content:\n{}".format(x['filename'], x['version'], ''.join(x['data'])))
         print("--------------------------")
 
-    print("List of files in cache:\n")
+    print("Cache file List:\n")
     for x in clientCache:
         print("--------------------------")
         print("File Name: {}\nVersion Number: {}\nFile Content:\n{}".format(x['filename'], x['version'], ''.join(x['data'])))
         print("--------------------------")
 
 def getFile(ip, port, filename, clientCache):
-    f = [f for f in clientCache if f['filename'] == filename]  # check if in cache
+    f = [f for f in clientCache if f['filename'] == filename]  
 
-    if len(f) == 0:  # not in cache yet
+    if len(f) == 0: 
         print("(getFile) Not in cache")
-        # Get from fileserver
         location = 'http://{}:{}/filedir/{}'.format(ip, port, filename)
         r = requests.get(location)
-        json_data = json.loads(r.text)  # JSON to dict (JSON
+        json_data = json.loads(r.text)  
         if 'success' in json_data:
             if json_data['success'] == False:
                 print("(getFile) File does not exist on server")
                 return -1
-        # Store it in the local cache
+        # Storing it in the local cache
         clientCache.append(json_data)
 
     else:  
         print("(getFile) Found in cache")
-        f = f[0]  # To turn f from a list of a single dictionary to a single dictionary
+        f = f[0]  
         print(f)
         return f
 
@@ -44,24 +42,25 @@ def getFile(ip, port, filename, clientCache):
 
 
 def editFile(ipAddress, portNumber, clientID, fileData, newText, clientCache):
-    #  To edit the file, only the cached version will be changed
+    #  changing only the cached version
     f = [f for f in clientCache if f['filename'] == fileData['filename']]  # check if in cache
     f = f[0]
     if len(f) == 0:  # not in cache yet
         print("(Edit file) File not in cache")
-    f['data'] = newText  # Edit cached version
+    f['data'] = newText  # Edited cached version
     print(clientCache)
 
 
-def uploadFile(ip, port, filename, clientCache):
-    # uploads file from the cache
+def uploadFile(ip, port, clientID, filename, clientCache):
+    # uploading file from the cache
     location = 'http://{}:{}/filedir/{}'.format(ip, port, filename)
     f = [f for f in clientCache if f['filename'] == filename]  # check if in cache
-    if len(f) == 0:  # not in cache yet
+    if len(f) == 0:  
         print("(Upload file) File not in cache")
         return
     f = f[0]
-    r = requests.put(location, json={'version': f['version'], 'data':f['data']})
+    print(filename, "printing File Name:")
+    r = requests.put(location, json={'version': f['version'], 'data':f['data'], 'clientID':clientID})
     json_data = json.loads(r.text)
     if json_data['success'] == 'locked':
         print("(editFile) This file is currently locked. Waiting")
@@ -83,10 +82,11 @@ def createFile(ip, port, filename, data, clientCache):
         return
     clientCache.append({'filename': filename, 'version': 0, 'data': data})
 
-def deleteFile(ip, port, filename, clientCache):
+
+def deleteFile(ip, port,clientID, filename, clientCache):
     location = 'http://{}:{}/filedir/{}'.format(ip, port, filename)
-    r = requests.delete(location)
-    json_data = json.loads(r.text)  # JSON to dict (JSON
+    r = requests.delete(location, json={'clientID':clientID})
+    json_data = json.loads(r.text)  
     if 'success' in json_data:
         if json_data['success'] == 'locked':
             print("(deleteFile) File is locked. Waiting...")
@@ -117,7 +117,7 @@ def lockGetId(ip, port):
 
 def lockAddToQueue(ip, port, clientID, filename):
     r = requests.put('http://{}:{}/lock/{}'.format(ip, port, filename), json={'id': clientID})
-    json_data = json.loads(r.text)  # JSON to dict (JSON
+    json_data = json.loads(r.text)  
     if json_data['success'] == 'Acquired':
         print("Added to lock queue for {}".format(filename))
     else:
@@ -125,6 +125,6 @@ def lockAddToQueue(ip, port, clientID, filename):
 
 def lockDeleteFromQueue(ip, port, clientID, filename):
     r = requests.delete('http://{}:{}/lock/{}'.format(ip, port, filename), json={'id': clientID})
-    json_data = json.loads(r.text)  # JSON to dict (JSON
+    json_data = json.loads(r.text)  
     if json_data['success'] == 'Removed':
         print("Removed from lock queue for {}".format(filename))
