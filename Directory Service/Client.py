@@ -27,18 +27,8 @@ def run():
             fileRecv = clientLibrary.getFile(ipAddr, portNumber, userFile)
             if fileRecv != -1:
                 clientLibrary.printFile(fileRecv)
-                clientLibrary.lockAddToQueue(ipAddr, portNumber, clientID, userFile)
-
-                lockStatus = -1
-                while lockStatus == -1: 
-                    dataToWrite = input("Type the text you want to write to the file: ")
-                    lockStatus = clientLibrary.editFile(ipAddr, portNumber, clientID, fileRecv, dataToWrite)
-                    if lockStatus != -1:
-                        break
-                    if input("Type '0' to abort edit. Type anything else to wait:") == '0':
-                        break
-                    time.sleep(2)
-                clientLibrary.lockDeleteFromQueue(ipAddr, portNumber, clientID, userFile)
+                dataToWrite = input("Type the text you want to write to the file: ")
+                clientLibrary.editFile(ipAddr, portNumber, fileRecv, dataToWrite)
             else:
                 print("File not found\n")
 
@@ -49,16 +39,7 @@ def run():
 
         elif userChoice == '5':
             userFile = input("Enter the file name to delete: ")
-            clientLibrary.lockAddToQueue(ipAddr, portNumber, clientID, userFile)
-            lockStatus = -1
-            while lockStatus == -1:
-                lockStatus = clientLibrary.deleteFile(ipAddr, portNumber, clientID, userFile)
-                if lockStatus != -1:
-                    break
-                if input("Type '0' to abort deletion. Type anything else to wait:") == '0':
-                    break
-                time.sleep(2)
-            clientLibrary.lockDeleteFromQueue(ipAddr, portNumber, clientID, userFile) 
+            clientLibrary.deleteFile(ipAddr, portNumber, userFile)
 
         elif userChoice == '0':
             print("Ending client application")
