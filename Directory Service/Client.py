@@ -1,4 +1,4 @@
-import clientLibrary, sys
+import Lib, sys
 
 def run():
     ipAddr = sys.argv[1]
