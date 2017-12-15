@@ -65,7 +65,7 @@ def run():
             clientLibrary.lockAddToQueue(ipAddress, portNumber, clientID, userFile)  # Join lock queueue
             lockStatus = -1
             while lockStatus == -1:  # Polling
-                lockStatus = clientLibrary.deleteFile(ipAddress, portNumber, clientID, userFile)
+                lockStatus = clientLibrary.deleteFile(ipAddress, portNumber, clientID, userFile, localCache)
                 if lockStatus != -1:
                     break
                 if input("Type '0' to abort deletion. Type anything else to wait:") == '0':
@@ -84,7 +84,7 @@ def run():
                 lockStatus = -1
                 while lockStatus == -1:  # Polling
                     dataToWrite = input("Enter the data to write to the file:")
-                    lockStatus = clientLibrary.uploadFile(ipAddress, portNumber, userFile, localCache)
+                    lockStatus = clientLibrary.uploadFile(ipAddress, portNumber, clientID, userFile, localCache)
                     if lockStatus != -1:
                         break
                     if input("Type '0' to abort edit. Type anything else to wait:") == '0':
