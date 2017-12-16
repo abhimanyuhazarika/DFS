@@ -14,32 +14,32 @@ def run():
                            "5. Delete file\n"
                            "0. Exit\n")
         if userChoice == '1':
-            clientLibrary.listFiles(ipAddr,portNumber)
+            Lib.listFiles(ipAddr,portNumber)
 
         elif userChoice == '2':
             userFile = input("Enter the file name: ")
-            fileRecv = clientLibrary.getFile(ipAddr, portNumber, userFile)
+            fileRecv = Lib.getFile(ipAddr, portNumber, userFile)
             if fileRecv != -1:
-                clientLibrary.printFile(fileRecv)
+                Lib.printFile(fileRecv)
 
         elif userChoice == '3':
             userFile = input("Enter the file name: ")
-            fileRecv = clientLibrary.getFile(ipAddr, portNumber, userFile)
+            fileRecv = Lib.getFile(ipAddr, portNumber, userFile)
             if fileRecv != -1:
-                clientLibrary.printFile(fileRecv)
+                Lib.printFile(fileRecv)
                 dataToWrite = input("Type the text you want to write to the file: ")
-                clientLibrary.editFile(ipAddr, portNumber, fileRecv, dataToWrite)
+                Lib.editFile(ipAddr, portNumber, fileRecv, dataToWrite)
             else:
                 print("File not found\n")
 
         elif userChoice == '4':
             userFile = input("Enter new file name: ")
             userData = input("Enter new data for the file: ")
-            clientLibrary.createFile(ipAddr, portNumber, userFile, userData)
+            Lib.createFile(ipAddr, portNumber, userFile, userData)
 
         elif userChoice == '5':
             userFile = input("Enter the file name to delete: ")
-            clientLibrary.deleteFile(ipAddr, portNumber, userFile)
+            Lib.deleteFile(ipAddr, portNumber, userFile)
 
         elif userChoice == '0':
             print("Ending client application")
