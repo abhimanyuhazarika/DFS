@@ -5,6 +5,88 @@ import os, sys
 
 app = Flask(__name__)
 api = Api(app)
+class fileApi(Resource):
+    def __init__(self):
+        global fileS
+        self.server = fileS
+        super(fileApi, self).__init__()  
+        self.reqparser = reqparse.RequestParser() 
+        self.reqparser.add_argument('filename', type=str, location='json')  
+        self.reqparser.add_argument('version', type=int, location='json')
+        self.reqparser.add_argument('data', type=str, location='json')
+
+
+    def get(self, filename):
+        f = [f for f in self.server.files if f['filename'] == filename]
+        if len(f) == 0:
+            return {'success': False}
+        f = f[0] 
+        return f
+
+    def delete(self, filename):
+        f = [f for f in self.server.files if f['filename'] == filename]
+        if len(f) == 0:
+            return {'success': False}  
+        self.server.files[:] = [d for d in self.server.files if d.get('filename') != filename]
+
+        dir = os.path.dirname(__file__)  
+        serverDataPath = os.path.join(dir, 'serverData1')  
+        serverDataPath = os.path.join(serverDataPath, filename)
+        print(serverDataPath)
+
+        if os.path.exists(serverDataPath):
+            os.remove(serverDataPath)  
+        print(self.server.files)
+        return {'success':True}
+
+
+    def put(self, filename):
+        args = self.reqparser.parse_args() 
+        print(args)
+
+        f = [f for f in self.server.files if f['filename'] == filename]
+        if len(f) == 0:
+            return {'success': 'notOnServer'}
+        f = f[0]
+        if args['version'] < f['version']:
+            return {'success':'outOfDate'}
+
+        args['version'] = args['version'] + 1
+
+        for k, v in args.items():
+             if v != None:
+                print(v)
+                f[k] = v
+
+        dir = os.path.dirname(__file__)  
+        serverDataPath = os.path.join(dir, 'serverData1')  
+        serverDataPath = os.path.join(serverDataPath, f['filename'])
+        print(serverDataPath)
+        currentFile = open(serverDataPath, 'w')
+        currentFile.write(f['data'])
+        currentFile.close()
+        print(f)
+        return {'success':f}
+
+
+api.add_resource(fileApi, "/filedir/<string:filename>", endpoint="file")
+
+
+class fileServer():
+    def __init__(self):
+
+        self.files = [] 
+
+        dir = os.path.dirname(__file__)
+        filePath = os.path.join(dir, 'serverData1')  
+        print("\nServer files found:\n")
+        for fileName in os.listdir(filePath):
+            if fileName.endswith(".txt"):  
+                print(fileName)
+                with open(os.path.join("serverData1", fileName), "r") as myfile:
+                    data = myfile.readlines()
+                self.files.append({'filename': fileName, "data": data, "version": 0})
+        print("\n")
 
 class fileListApi(Resource):
     def __init__(self): 
@@ -20,7 +102,6 @@ class fileListApi(Resource):
 
     def get(self):
         return self.server.files
-        # return {"Hello": "World"} 
         
     def post(self):
         args = self.reqparser.parse_args()  
